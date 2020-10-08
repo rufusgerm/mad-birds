@@ -6,10 +6,16 @@ using UnityEngine.SceneManagement;
 
 public class Bird : MonoBehaviour {
 
+    public UIDialog uiDialog;
     private Vector3 _initialPosition;
-    [SerializeField] private float _launchPower = 500;
+    private float _launchPower = 500;
+    private float _minXDrag = -9f;
+    private float _maxXDrag = 3f;
+    private float _minYDrag = -6f;
+    private float _maxYDrag = 0.75f;
     private bool _birdWasLaunched = false;
     private float amountOfTimeIdling;
+
 
     private void Awake()
     {
@@ -18,28 +24,36 @@ public class Bird : MonoBehaviour {
 
     private void Update()
     {
-        GetComponent<LineRenderer>().SetPosition(0, transform.position);
-        GetComponent<LineRenderer>().SetPosition(1, _initialPosition);
+        RenderArrows();
+
+        if (transform.position.y > 10 ||
+            transform.position.x > 40 ||
+            transform.position.x < -20 ||
+            transform.position.y < -15
+            )
+        {
+            //Implement Overall Level Clamping
+        }
 
         if (_birdWasLaunched &&
             GetComponent<Rigidbody2D>().velocity.magnitude <= 0.1
            )
             amountOfTimeIdling += Time.deltaTime;
 
-        if (transform.position.y > 10 ||
-            transform.position.x > 40 ||
-            transform.position.x < -20||
-            transform.position.y < -15 ||
-            (amountOfTimeIdling > 4 && _birdWasLaunched))
+
+        //Instantiate a reset button
+        if (amountOfTimeIdling > 3 && _birdWasLaunched)
         {
-            string currentSceneName = SceneManager.GetActiveScene().name;
-            SceneManager.LoadScene(currentSceneName);
+            uiDialog.ActivateResetDialog();
         }
     }
 
     private void OnMouseDown () {
-        GetComponent<SpriteRenderer>().color = Color.red;
-        GetComponent<LineRenderer>().enabled = true;
+        if(!_birdWasLaunched)
+        {
+            GetComponent<SpriteRenderer>().color = Color.red;
+            GetComponent<LineRenderer>().enabled = true;
+        }
     }
 
     private void OnMouseUp()
@@ -57,6 +71,16 @@ public class Bird : MonoBehaviour {
     {
         Vector3 newPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         transform.position = new Vector3(newPosition.x, newPosition.y);
+        transform.position = new Vector3(
+            x: Mathf.Clamp(newPosition.x, _minXDrag, _maxXDrag),
+            y: Mathf.Clamp(newPosition.y, _minYDrag, _maxYDrag)
+        );
+    }
+
+    private void RenderArrows()
+    {
+        GetComponent<LineRenderer>().SetPosition(0, transform.position);
+        GetComponent<LineRenderer>().SetPosition(1, _initialPosition);
     }
 
 }
