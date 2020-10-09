@@ -42,7 +42,7 @@ public class Bird : MonoBehaviour {
 
 
         //Instantiate a reset button
-        if (amountOfTimeIdling > 3 && _birdWasLaunched)
+        if (amountOfTimeIdling > 3 && _birdWasLaunched && !uiDialog.isGameOver)
         {
             uiDialog.ActivateResetDialog();
         }
@@ -58,23 +58,30 @@ public class Bird : MonoBehaviour {
 
     private void OnMouseUp()
     {
-        GetComponent<SpriteRenderer>().color = Color.white;
+        if (!_birdWasLaunched)
+        {
+            GetComponent<SpriteRenderer>().color = Color.white;
 
-        Vector2 directionToInitialPosition = _initialPosition - transform.position;
-        GetComponent<Rigidbody2D>().AddForce(directionToInitialPosition * _launchPower);
-        GetComponent<Rigidbody2D>().gravityScale = 1;
-        GetComponent<LineRenderer>().enabled = false ;
-        _birdWasLaunched = true;
+            Vector2 directionToInitialPosition = _initialPosition - transform.position;
+            GetComponent<Rigidbody2D>().AddForce(directionToInitialPosition * _launchPower);
+            GetComponent<Rigidbody2D>().gravityScale = 1;
+            GetComponent<LineRenderer>().enabled = false;
+            _birdWasLaunched = true;
+        }
     }
 
     private void OnMouseDrag()
     {
-        Vector3 newPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        transform.position = new Vector3(newPosition.x, newPosition.y);
-        transform.position = new Vector3(
-            x: Mathf.Clamp(newPosition.x, _minXDrag, _maxXDrag),
-            y: Mathf.Clamp(newPosition.y, _minYDrag, _maxYDrag)
-        );
+        if (!_birdWasLaunched)
+        {
+            Vector3 newPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            transform.position = new Vector3(newPosition.x, newPosition.y);
+            transform.position = new Vector3(
+                x: Mathf.Clamp(newPosition.x, _minXDrag, _maxXDrag),
+                y: Mathf.Clamp(newPosition.y, _minYDrag, _maxYDrag)
+            );
+        }
+        
     }
 
     private void RenderArrows()

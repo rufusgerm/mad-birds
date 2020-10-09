@@ -8,9 +8,15 @@ public class LevelController : MonoBehaviour
     private int sceneIdx;
     private static int MAX_LEVELS;
     private bool hasNextLevel = false;
+    private bool isUIActive = false;
     public UIDialog uiDialog;
-    public Animator sceneTransition;
+    public Animator sceneTransition, buttonRotation;
     public float transitionTime, countdown = 3;
+
+    private void Awake()
+    {
+        Enemy.enemyCount = 0;
+    }
 
     private void Start()
     {
@@ -24,8 +30,12 @@ public class LevelController : MonoBehaviour
     {
         if(Enemy.enemyCount < 1)
         {
-            Debug.Log("All Monsters Squished!");
-            uiDialog.dialogText.gameObject.SetActive(true);
+            if(!isUIActive)
+            {
+                uiDialog.dialogText.gameObject.SetActive(true);
+                isUIActive = true;
+            }
+            
             if (hasNextLevel)
             {
                 countdown -= Time.deltaTime;
@@ -33,7 +43,7 @@ public class LevelController : MonoBehaviour
                 uiDialog.dialogText.text = "Great Job!\n" + countdown.ToString("0");
             }
             else
-            { uiDialog.dialogText.text = "Game\n Over!"; }
+            { uiDialog.ActivateGameOver(); }
         }
     }
 
@@ -47,6 +57,8 @@ public class LevelController : MonoBehaviour
 
     IEnumerator ResetLevel(int currentLevelIdx)
     {
+        buttonRotation.SetTrigger("Clicked");
+        yield return new WaitForSeconds(0.5f);
         sceneTransition.SetTrigger("Start");
         yield return new WaitForSeconds(1);
         SceneManager.LoadScene(currentLevelIdx);
